@@ -41,8 +41,8 @@ class ClipboardManagerGUI:
         self.clear_button = tk.Button(self.root, text="Clear", command=self.clear_items)
         self.clear_button.pack(side=tk.BOTTOM)
 
-        self.root.bind("<Button-1>", self.hide)
-        self.root.bind("<Escape>", self.hide)
+        self.root.bind("<Button>", self.hide)  # Bind to any mouse button click event
+        self.root.bind("<Escape>", self.hide)  # Bind to 'Escape' key press event
 
     def show(self):
         self.root.update()
@@ -70,15 +70,26 @@ def handle_shortcut():
     else:
         gui.show()
 
+def safe_shutdown():
+    gui.hide()
+    keyboard.unhook_all()
+    gui.root.destroy()
 
 def check_clipboard():
-    current_clipboard = pyperclip.paste()
-    if current_clipboard and current_clipboard != clipboard_manager.get_items()[-1:]:
-        clipboard_manager.add_item(current_clipboard)
-        gui.item_listbox.delete(0, tk.END)
-        for item in clipboard_manager.get_items():
-            gui.item_listbox.insert(tk.END, item)
-    gui.root.after(1000, check_clipboard)
+    try:
+        current_clipboard = pyperclip.paste()
+        if current_clipboard and current_clipboard != clipboard_manager.get_items()[-1:]:
+            clipboard_manager.add_item(current_clipboard)
+            gui.item_listbox.delete(0, tk.END)
+            for item in clipboard_manager.get_items():
+                gui.item_listbox.insert(tk.END, item)
+    except KeyboardInterrupt:
+        safe_shutdown()
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+        safe_shutdown()
+    finally:
+        gui.root.after(1000, check_clipboard)
 
 
 clipboard_manager = ClipboardManager()
