@@ -41,11 +41,14 @@ class ClipboardManagerGUI:
         self.clear_button = tk.Button(self.root, text="Clear", command=self.clear_items)
         self.clear_button.pack(side=tk.BOTTOM)
 
+        self.root.bind("<Button-1>", self.hide)
+        self.root.bind("<Escape>", self.hide)
+
     def show(self):
         self.root.update()
         self.root.deiconify()
 
-    def hide(self):
+    def hide(self, event=None):
         self.root.withdraw()
 
     def move_item_to_top(self, event):
