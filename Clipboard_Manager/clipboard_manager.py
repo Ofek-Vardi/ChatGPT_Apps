@@ -2,6 +2,8 @@ import tkinter as tk
 import tkinter.messagebox as messagebox
 import pyperclip
 import keyboard
+import threading
+import time
 
 
 class ClipboardManager:
@@ -41,7 +43,6 @@ class ClipboardManagerGUI:
         self.clear_button = tk.Button(self.root, text="Clear", command=self.clear_items)
         self.clear_button.pack(side=tk.BOTTOM)
 
-        self.root.bind("<Button>", self.hide)  # Bind to any mouse button click event
         self.root.bind("<Escape>", self.hide)  # Bind to 'Escape' key press event
 
     def show(self):
@@ -70,31 +71,49 @@ def handle_shortcut():
     else:
         gui.show()
 
+
 def safe_shutdown():
-    gui.hide()
-    keyboard.unhook_all()
-    gui.root.destroy()
+    if gui.root:
+        gui.hide()
+        keyboard.unhook_all()
+        gui.root.destroy()
+
 
 def check_clipboard():
     try:
-        current_clipboard = pyperclip.paste()
-        if current_clipboard and current_clipboard != clipboard_manager.get_items()[-1:]:
-            clipboard_manager.add_item(current_clipboard)
-            gui.item_listbox.delete(0, tk.END)
-            for item in clipboard_manager.get_items():
-                gui.item_listbox.insert(tk.END, item)
+        while True:
+            try:
+                current_clipboard = pyperclip.paste()
+                if current_clipboard and current_clipboard != clipboard_manager.get_items()[-1:]:
+                    clipboard_manager.add_item(current_clipboard)
+                    gui.item_listbox.delete(0, tk.END)
+                    for item in clipboard_manager.get_items():
+                        gui.item_listbox.insert(tk.END, item)
+            except KeyboardInterrupt:
+                raise
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+            # Sleep for a short duration to avoid excessive CPU usage
+            # and allow the GUI to handle events
+            time.sleep(0.1)
     except KeyboardInterrupt:
-        safe_shutdown()
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
-        safe_shutdown()
-    finally:
-        gui.root.after(1000, check_clipboard)
+        pass
 
 
 clipboard_manager = ClipboardManager()
 gui = ClipboardManagerGUI(clipboard_manager)
 
 keyboard.add_hotkey("alt+1", handle_shortcut)
-gui.root.after(1000, check_clipboard)
-gui.root.mainloop()
+
+check_clipboard_thread = threading.Thread(target=check_clipboard, daemon=True)
+check_clipboard_thread.start()
+
+# Bind mouse button click event to hide the GUI
+gui.root.bind("<Button>", lambda event: gui.hide())
+
+try:
+    gui.root.mainloop()
+except KeyboardInterrupt:
+    pass
+finally:
+    safe_shutdown()
