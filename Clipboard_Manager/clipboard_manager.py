@@ -35,6 +35,7 @@ class ClipboardManagerGUI:
         self.root = tk.Tk()
         self.root.title("Clipboard Manager")
         self.root.withdraw()  # Hide the UI initially
+        self.root.overrideredirect(True)  # Remove title bar and window controls
 
         self.item_listbox = tk.Listbox(self.root, selectmode=tk.SINGLE)
         self.item_listbox.pack(fill=tk.BOTH, expand=True)
@@ -45,6 +46,9 @@ class ClipboardManagerGUI:
 
     def show(self):
         self.root.update()
+        x = self.root.winfo_pointerx()
+        y = self.root.winfo_pointery()
+        self.root.geometry(f"+{x}+{y}")  # Set window position to cursor coordinates
         self.root.deiconify()
         self.root.focus_force()  # Set focus to the window
 
