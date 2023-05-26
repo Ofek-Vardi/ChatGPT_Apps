@@ -41,9 +41,6 @@ class ClipboardManagerGUI:
         self.item_listbox.bind("<<ListboxSelect>>", self.move_item_to_top)
         self.item_listbox.bind("<Button-1>", self.hide)  # Bind to mouse button 1 click event
 
-        self.clear_button = tk.Button(self.root, text="Clear", command=self.clear_items)
-        self.clear_button.pack(side=tk.BOTTOM)
-
         self.root.bind("<Escape>", self.hide)  # Bind to 'Escape' key press event
         self.root.bind("<FocusOut>", self.check_focus)  # Bind to focus out event
 
@@ -61,10 +58,6 @@ class ClipboardManagerGUI:
             self.clipboard_manager.move_to_top(selected_item)
             self.item_listbox.delete(selected_index)
             self.item_listbox.insert(0, selected_item)
-
-    def clear_items(self):
-        self.clipboard_manager.clear_items()
-        self.item_listbox.delete(0, tk.END)
 
     def check_focus(self, event):
         if not self.root.focus_get():
