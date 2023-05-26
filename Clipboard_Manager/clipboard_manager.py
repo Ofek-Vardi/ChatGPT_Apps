@@ -39,11 +39,13 @@ class ClipboardManagerGUI:
         self.item_listbox = tk.Listbox(self.root, selectmode=tk.SINGLE)
         self.item_listbox.pack(fill=tk.BOTH, expand=True)
         self.item_listbox.bind("<<ListboxSelect>>", self.move_item_to_top)
+        self.item_listbox.bind("<Button-1>", self.hide)  # Bind to mouse button 1 click event
 
         self.clear_button = tk.Button(self.root, text="Clear", command=self.clear_items)
         self.clear_button.pack(side=tk.BOTTOM)
 
         self.root.bind("<Escape>", self.hide)  # Bind to 'Escape' key press event
+        self.root.bind("<FocusOut>", self.check_focus)  # Bind to focus out event
 
     def show(self):
         self.root.update()
@@ -63,6 +65,10 @@ class ClipboardManagerGUI:
     def clear_items(self):
         self.clipboard_manager.clear_items()
         self.item_listbox.delete(0, tk.END)
+
+    def check_focus(self, event):
+        if not self.root.focus_get():
+            self.hide()
 
 
 def handle_shortcut():
@@ -107,9 +113,6 @@ keyboard.add_hotkey("alt+1", handle_shortcut)
 
 check_clipboard_thread = threading.Thread(target=check_clipboard, daemon=True)
 check_clipboard_thread.start()
-
-# Bind mouse button click event to hide the GUI
-gui.root.bind("<Button>", lambda event: gui.hide())
 
 try:
     gui.root.mainloop()
