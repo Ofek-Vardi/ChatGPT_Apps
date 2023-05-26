@@ -45,11 +45,18 @@ class ClipboardManagerGUI:
         self.root.bind("<FocusOut>", self.hide)  # Bind to focus out event
 
     def show(self):
-        self.root.update()
+        # Retrieve cursor position
         x = self.root.winfo_pointerx()
         y = self.root.winfo_pointery()
+
+        # Position the window near the cursor
         self.root.geometry(f"+{x}+{y}")  # Set window position to cursor coordinates
+
+        self.root.update()
         self.root.deiconify()
+        self.root.lift()  # Raise the window to the top
+        self.root.attributes("-topmost", True)  # Ensure the window stays on top
+
         self.root.focus_force()  # Set focus to the window
 
     def hide(self, event=None):
