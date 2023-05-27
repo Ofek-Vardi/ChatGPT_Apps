@@ -18,9 +18,6 @@ class ClipboardManager:
     def get_items(self):
         return self.clipboard_items
 
-    def clear_items(self):
-        self.clipboard_items = []
-
     def move_to_top(self, item):
         if item in self.clipboard_items:
             self.clipboard_items.remove(item)
