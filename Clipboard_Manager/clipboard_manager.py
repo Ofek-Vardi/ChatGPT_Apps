@@ -56,10 +56,41 @@ class ClipboardManagerGUI:
 
         self.root.focus_force()  # Set focus to the window
 
+        if self.item_listbox.size() > 0:
+            self.item_listbox.selection_set(0)  # Select the first item
+            self.item_listbox.activate(0)  # Set the focus to the first item
+
+            self.root.bind("<Up>", self.move_up)  # Bind to up arrow key
+            self.root.bind("<Down>", self.move_down)  # Bind to down arrow key
+            self.root.bind("<Return>", self.move_item_to_top)  # Bind to Enter key
+
     def hide(self, event=None):
         self.root.withdraw()
 
-    def move_item_to_top(self, event):
+    def update_item_list(self):
+        self.item_listbox.delete(0, tk.END)
+        for item in self.clipboard_manager.get_items()[::-1]:
+            self.item_listbox.insert(tk.END, item)
+
+    def move_up(self, event):
+        current_index = self.item_listbox.curselection()
+        if current_index:
+            new_index = max(0, current_index[0] - 1)
+            self.item_listbox.selection_clear(0, tk.END)
+            self.item_listbox.selection_set(new_index)
+            self.item_listbox.activate(new_index)
+            self.item_listbox.see(new_index)  # Scroll to the new index
+
+    def move_down(self, event):
+        current_index = self.item_listbox.curselection()
+        if current_index:
+            new_index = min(current_index[0] + 1, self.item_listbox.size() - 1)
+            self.item_listbox.selection_clear(0, tk.END)
+            self.item_listbox.selection_set(new_index)
+            self.item_listbox.activate(new_index)
+            self.item_listbox.see(new_index)  # Scroll to the new index
+
+    def move_item_to_top(self, event=None):
         selected_index = self.item_listbox.curselection()
         if selected_index:
             selected_item = self.item_listbox.get(selected_index)
@@ -84,14 +115,15 @@ def safe_shutdown():
 
 def check_clipboard():
     try:
+        previous_clipboard = pyperclip.paste()
         while True:
             try:
                 current_clipboard = pyperclip.paste()
-                if current_clipboard and current_clipboard != clipboard_manager.get_items()[-1:]:
+                newest_item = clipboard_manager.get_items()[-1] if clipboard_manager.get_items() else None
+                if current_clipboard != previous_clipboard and current_clipboard != newest_item:
                     clipboard_manager.add_item(current_clipboard)
-                    gui.item_listbox.delete(0, tk.END)
-                    for item in reversed(clipboard_manager.get_items()):  # Reverse the order of items
-                        gui.item_listbox.insert(tk.END, item)
+                    gui.update_item_list()
+                    previous_clipboard = current_clipboard
             except KeyboardInterrupt:
                 raise
             except Exception as e:
