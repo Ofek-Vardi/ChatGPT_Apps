@@ -114,26 +114,24 @@ def safe_shutdown():
 
 
 def check_clipboard():
+    previous_clipboard = pyperclip.paste()
     try:
-        previous_clipboard = pyperclip.paste()
         while True:
-            try:
-                current_clipboard = pyperclip.paste()
-                newest_item = clipboard_manager.get_items()[-1] if clipboard_manager.get_items() else None
-                if current_clipboard != previous_clipboard and current_clipboard != newest_item:
-                    clipboard_manager.add_item(current_clipboard)
-                    gui.update_item_list()
-                    previous_clipboard = current_clipboard
-            except KeyboardInterrupt:
-                raise
-            except Exception as e:
-                messagebox.showerror("Error", str(e))
+            current_clipboard = pyperclip.paste()
+            newest_item = clipboard_manager.get_items()[-1] if clipboard_manager.get_items() else None
+            if current_clipboard != previous_clipboard and current_clipboard != newest_item:
+                clipboard_manager.add_item(current_clipboard)
+                gui.update_item_list()
+                previous_clipboard = current_clipboard
             # Sleep for a short duration to avoid excessive CPU usage
             # and allow the GUI to handle events
             time.sleep(0.1)
     except KeyboardInterrupt:
         pass
-
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+    finally:
+        gui.safe_shutdown()
 
 clipboard_manager = ClipboardManager()
 gui = ClipboardManagerGUI(clipboard_manager)
@@ -147,5 +145,7 @@ try:
     gui.root.mainloop()
 except KeyboardInterrupt:
     pass
+except Exception as e:
+    messagebox.showerror("Error", str(e))
 finally:
     safe_shutdown()
