@@ -93,7 +93,7 @@ def check_clipboard():
                 if current_clipboard and current_clipboard != clipboard_manager.get_items()[-1:]:
                     clipboard_manager.add_item(current_clipboard)
                     gui.item_listbox.delete(0, tk.END)
-                    for item in clipboard_manager.get_items():
+                    for item in reversed(clipboard_manager.get_items()):  # Reverse the order of items
                         gui.item_listbox.insert(tk.END, item)
             except KeyboardInterrupt:
                 raise
