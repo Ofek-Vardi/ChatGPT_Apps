@@ -36,8 +36,7 @@ class ClipboardManagerGUI:
 
         self.item_listbox = tk.Listbox(self.root, selectmode=tk.SINGLE)
         self.item_listbox.pack(fill=tk.BOTH, expand=True)
-        self.item_listbox.bind("<<ListboxSelect>>", self.move_item_to_top)
-        self.item_listbox.bind("<Button-1>", self.hide)  # Bind to mouse button 1 click event
+        self.root.bind("<Button-1>", self.move_item_to_top)  # Bind to mouse button 1 click event
         self.root.bind("<Escape>", self.hide)  # Bind to 'Escape' key press event
         self.root.bind("<FocusOut>", self.hide)  # Bind to focus out event
 
@@ -93,6 +92,7 @@ class ClipboardManagerGUI:
     def move_item_to_top(self, event=None):
         selected_index = self.item_listbox.curselection()
         if selected_index:
+            self.hide()
             selected_item = self.item_listbox.get(selected_index)
             self.clipboard_manager.move_to_top(selected_item)
             self.item_listbox.delete(selected_index)
